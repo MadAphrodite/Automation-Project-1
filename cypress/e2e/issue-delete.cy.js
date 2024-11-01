@@ -7,6 +7,10 @@ const confirmDeleteButton = "Delete issue";
 const cancelDeleteButton = "Cancel";
 const closeModalButton = '[data-testid="icon:close"]';
 const issueTitle = "This is an issue of type: Task.";
+const confirmHeading = "Are you sure you want to delete this issue?";
+const confirmText = "Once you delete, it's gone for good";
+const amountOfIssuesAfterDeletion = 3;
+const amountOfIssuesAfterCancel = 4;
 
 function clickDeleteButtonIcon() {
   cy.get(issueDetailModal).within(() => {
@@ -17,14 +21,19 @@ function clickDeleteButtonIcon() {
 
 function confirmDeletion() {
   cy.get(confirmPopup).within(() => {
+    cy.contains(confirmHeading).should("be.visible");
+    cy.contains(confirmText).should("be.visible");
     cy.contains(confirmDeleteButton).should("be.visible").click();
   });
   cy.get(confirmPopup).should("not.exist");
-  cy.get(backlogList).should("be.visible");
+  cy.get(issueDetailModal).should("not.exist");
+  cy.get(backlogList).should("have.length", "1").and("be.visible");
 }
 
 function cancelDeletion() {
   cy.get(confirmPopup).within(() => {
+    cy.contains(confirmHeading).should("be.visible");
+    cy.contains(confirmText).should("be.visible");
     cy.contains(cancelDeleteButton).should("be.visible").click();
   });
   cy.get(confirmPopup).should("not.exist");
@@ -34,7 +43,7 @@ function cancelDeletion() {
 function closeIssueDetailModal() {
   cy.get(issueDetailModal).get(closeModalButton).first().click();
   cy.get(issueDetailModal).should("not.exist");
-  cy.get(backlogList).should("be.visible");
+  cy.get(backlogList).should("have.length", "1").and("be.visible");
 }
 
 describe("Issue delete", () => {
@@ -49,26 +58,22 @@ describe("Issue delete", () => {
     cy.get(issueDetailModal).should("be.visible");
   });
 
-  it("Should delete an issue and validate its deletion successfully", () => {
+  it("Should delete an issue successfully", () => {
     clickDeleteButtonIcon();
     confirmDeletion();
-    cy.get(backlogList)
-      .should("have.length", "1")
-      .within(() => {
-        cy.get(issuesList).should("have.length", "3");
-        cy.contains(issueTitle).should("not.exist");
-      });
+    cy.get(backlogList).within(() => {
+      cy.get(issuesList).should("have.length", amountOfIssuesAfterDeletion);
+      cy.contains(issueTitle).should("not.exist");
+    });
   });
 
-  it("Should initiate issue deletion process and then cancel it successfully", () => {
+  it("Should cancel deletion process successfully", () => {
     clickDeleteButtonIcon();
     cancelDeletion();
     closeIssueDetailModal();
-    cy.get(backlogList)
-      .should("have.length", "1")
-      .within(() => {
-        cy.get(issuesList).should("have.length", "4");
-        cy.contains(issueTitle).should("be.visible");
-      });
+    cy.get(backlogList).within(() => {
+      cy.get(issuesList).should("have.length", amountOfIssuesAfterCancel);
+      cy.contains(issueTitle).should("be.visible");
+    });
   });
 });

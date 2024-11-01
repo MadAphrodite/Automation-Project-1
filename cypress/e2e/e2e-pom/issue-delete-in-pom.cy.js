@@ -16,6 +16,7 @@ describe("Issue delete", () => {
     IssueModal.clickDeleteButton();
     IssueModal.confirmDeletion();
     IssueModal.ensureIssueIsNotVisibleOnBoard(issueTitle);
+    IssueModal.validateExpectedAmountIssues(3);
   });
 
   it("Should cancel deletion process successfully", () => {
@@ -23,5 +24,6 @@ describe("Issue delete", () => {
     IssueModal.cancelDeletion();
     IssueModal.closeDetailModal();
     IssueModal.ensureIssueIsVisibleOnBoard(issueTitle);
+    IssueModal.validateExpectedAmountIssues(4);
   });
 });
