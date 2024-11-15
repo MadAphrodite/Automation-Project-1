@@ -1,71 +1,45 @@
-describe('Issue comments creating, editing and deleting', () => {
-    beforeEach(() => {
-        cy.visit('/');
-        cy.url().should('eq', `${Cypress.env('baseUrl')}project/board`).then((url) => {
-            cy.visit(url + '/board');
-            cy.contains('This is an issue of type: Task.').click();
-        });
-    });
+import IssueCommentsAndTime from "../../cypress/pages/IssueCommentsAndTime";
+const issueTitle = "This is an issue of type: Task.";
 
-    const getIssueDetailsModal = () => cy.get('[data-testid="modal:issue-details"]');
+/* NB! I have added the following lines to cypress.config.js file:
+defaultCommandTimeout: 60000,
+requestTimeout: 60000,
+*/
 
-    it('Should create a comment successfully', () => {
-        const comment = 'TEST_COMMENT';
+describe("Issue comments creating, editing and deleting", () => {
+  beforeEach(() => {
+    cy.viewport(1920, 1080);
+    cy.visit("/");
+    cy.url()
+      .should("eq", `${Cypress.env("baseUrl")}project/board`)
+      .then((url) => {
+        cy.visit(url + "/board");
+        cy.contains(issueTitle).click();
+      });
+  });
 
-        getIssueDetailsModal().within(() => {
-            cy.contains('Add a comment...')
-                .click();
+  it("Should create, edit and delete a comment successfully", () => {
+    // Creating a new comment, asserting visibility
+    IssueCommentsAndTime.addNewComment();
+    IssueCommentsAndTime.assertNewCommentVisibility();
 
-            cy.get('textarea[placeholder="Add a comment..."]').type(comment);
+    // Editing the new comment, asserting visibility
+    IssueCommentsAndTime.clickEditCommentButton();
+    IssueCommentsAndTime.editPreviousCommentText();
+    IssueCommentsAndTime.assertEditedCommentVisibility();
 
-            cy.contains('button', 'Save')
-                .click()
-                .should('not.exist');
+    // Cancelling editing of the edited comment successfully
+    IssueCommentsAndTime.cancelEditingComment();
+    IssueCommentsAndTime.assertEditedCommentVisibility();
 
-            cy.contains('Add a comment...').should('exist');
-            cy.get('[data-testid="issue-comment"]').should('contain', comment);
-        });
-    });
+    // Cancelling deleting of the edited comment successfully
+    IssueCommentsAndTime.clickDeleteCommentButton();
+    IssueCommentsAndTime.cancelDeletionConfirmationPopup();
+    IssueCommentsAndTime.assertCancelledDeletionCommentStillExists();
 
-    it('Should edit a comment successfully', () => {
-        const previousComment = 'An old silent pond...';
-        const comment = 'TEST_COMMENT_EDITED';
-
-        getIssueDetailsModal().within(() => {
-            cy.get('[data-testid="issue-comment"]')
-                .first()
-                .contains('Edit')
-                .click()
-                .should('not.exist');
-
-            cy.get('textarea[placeholder="Add a comment..."]')
-                .should('contain', previousComment)
-                .clear()
-                .type(comment);
-
-            cy.contains('button', 'Save')
-                .click()
-                .should('not.exist');
-
-            cy.get('[data-testid="issue-comment"]')
-                .should('contain', 'Edit')
-                .and('contain', comment);
-        });
-    });
-
-    it('Should delete a comment successfully', () => {
-        getIssueDetailsModal()
-            .find('[data-testid="issue-comment"]')
-            .contains('Delete')
-            .click();
-
-        cy.get('[data-testid="modal:confirm"]')
-            .contains('button', 'Delete comment')
-            .click()
-            .should('not.exist');
-
-        getIssueDetailsModal()
-            .find('[data-testid="issue-comment"]')
-            .should('not.exist');
-    });
+    // Deleting the edited comment successfully
+    IssueCommentsAndTime.clickDeleteCommentButton();
+    IssueCommentsAndTime.confirmDeletionConfirmationPopup();
+    IssueCommentsAndTime.assertDeletedCommentDoesNotExist();
+  });
 });
