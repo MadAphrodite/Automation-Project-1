@@ -8,12 +8,11 @@ requestTimeout: 60000,
 */
 
 /* About the assignment:
-I could not get the test to work with
-creating a new issue in the beforeEach block
-(time tracking values kept resetting to default after closing the modal),
-so I used an existing issue to execute the tests.*/
+I could not get the tests to work with creating a new issue in the beforeEach block
+(time tracking values kept resetting to default after closing the IssueDetailsModal),
+so I used an existing issue(clearing its values) to execute the tests.*/
 
-describe("Time tracking and logging", () => {
+describe("Issue time tracking", () => {
   beforeEach(() => {
     cy.viewport(1920, 1080);
     cy.visit("/");
@@ -24,17 +23,46 @@ describe("Time tracking and logging", () => {
         cy.contains(issueTitle).click();
       });
     cy.get(issueDetailsModal).should("be.visible");
+    // Clearing existing values from both time estimation and logging
+    IssueCommentsAndTime.clearExistingTimeTracking();
   });
 
-  it("Should add, edit and remove estimation successfully", () => {
+  it("Should add, edit and remove time estimation successfully", () => {
     const valueAmount = 10;
+    const newValueAmount = 20;
 
-    // Clearing both time estimation and logging
-    IssueCommentsAndTime.clearExistingTimeTracking();
-    // Adding estimation successfully
+    // Adding time estimation successfully
     IssueCommentsAndTime.addTimeEstimation(valueAmount);
     IssueCommentsAndTime.assertAddedTimeEstimationVisibility(valueAmount);
+    // Editing time estimation successfully
+    IssueCommentsAndTime.updateTimeEstimation(valueAmount, newValueAmount);
+    IssueCommentsAndTime.assertUpdatedTimeEstimationVisibility(newValueAmount);
+    // Removing time estimation successfully
+    IssueCommentsAndTime.clearTimeEstimation(newValueAmount);
+    IssueCommentsAndTime.assertDeletedTimeEstimationVisibility();
   });
 
-  it.skip("Should add, edit and remove time logging successfully", () => {});
+  it("Should add and remove time logging successfully", () => {
+    const valueAmount = 10;
+    const valueSpent = 2;
+    const valueRemaining = 5;
+
+    // Adding time estimation successfully
+    IssueCommentsAndTime.addTimeEstimation(valueAmount);
+    IssueCommentsAndTime.assertAddedTimeEstimationVisibility(valueAmount);
+    // Adding time log to time tracking successfully
+    IssueCommentsAndTime.addTimeTracking(valueSpent, valueRemaining);
+    IssueCommentsAndTime.assertAddedTimeTrackingVisibility(
+      valueAmount,
+      valueSpent,
+      valueRemaining
+    );
+    // Removing time log from time tracking successfully
+    IssueCommentsAndTime.removeTimeTracking(valueSpent, valueRemaining);
+    IssueCommentsAndTime.assertRemovedTimeTrackingVisibility(
+      valueAmount,
+      valueSpent,
+      valueRemaining
+    );
+  });
 });

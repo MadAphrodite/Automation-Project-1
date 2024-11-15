@@ -1,22 +1,13 @@
 class IssueCommentsAndTime {
   constructor() {
-    this.issueModal = '[data-testid="modal:issue-create"]';
     this.issueDetailsModal = '[data-testid="modal:issue-details"]';
-    this.issuesList = '[data-testid="list-issue"]';
-    this.title = 'input[name="title"]';
-    this.issueType = '[data-testid="select:type"]';
-    this.descriptionField = ".ql-editor";
-    this.assignee = '[data-testid="select:userIds"]';
-    this.backlogList = '[data-testid="board-list:backlog"]';
+    this.issueComment = '[data-testid="issue-comment"]';
     this.doneList = '[data-testid="board-list:done"]';
-    this.submitButton = 'button[type="submit"]';
     this.closeIcon = '[data-testid="icon:close"]';
     this.trackingIcon = '[data-testid="icon:stopwatch"]';
-    this.timeEstimationTitle = "Original Estimate (hours)";
     this.timeEstimationField = 'input[placeholder="Number"]';
     this.addCommentField = "Add a comment...";
     this.addCommentTextarea = 'textarea[placeholder="Add a comment..."]';
-    this.issueComment = '[data-testid="issue-comment"]';
     this.confirmDeletePopup = '[data-testid="modal:confirm"]';
     this.confirmCommentHeading =
       "Are you sure you want to delete this comment?";
@@ -27,77 +18,13 @@ class IssueCommentsAndTime {
     this.timeTrackingModal = '[data-testid="modal:tracking"]';
   }
 
-  getIssueModal() {
-    return cy.get(this.issueModal);
-  }
-
   getIssueDetailsModal() {
     return cy.get(this.issueDetailsModal);
   }
 
-  // Creating an issue
-
-  selectIssueType(issueType) {
-    cy.get(this.issueType).click("bottomRight");
-    cy.get(`[data-testid="select-option:${issueType}"]`)
-      .trigger("mouseover")
-      .trigger("click");
-  }
-
-  selectAssignee(assigneeName) {
-    cy.get(this.assignee).click("bottomRight");
-    cy.get(`[data-testid="select-option:${assigneeName}"]`).click();
-  }
-
-  editTitle(title) {
-    cy.get(this.title).debounced("type", title);
-  }
-
-  editDescription(description) {
-    cy.get(this.descriptionField).type(description);
-  }
-
-  createIssue(issueDetails) {
-    this.getIssueModal().within(() => {
-      this.selectIssueType(issueDetails.type);
-      this.editDescription(issueDetails.description);
-      this.editTitle(issueDetails.title);
-      this.selectAssignee(issueDetails.assignee);
-      cy.get(this.submitButton).click();
-    });
-    cy.get(this.issueModal).should("not.exist");
-    cy.wait(3000);
-    cy.contains("Issue has been successfully created.").should("exist");
-  }
-
-  ensureIssueIsCreatedAndVisible(expectedAmountIssues, issueDetails) {
-    cy.reload();
-    cy.get(this.issueModal).should("not.exist");
-    cy.contains("Issue has been successfully created.").should("not.exist");
-
-    cy.get(this.backlogList)
-      .should("be.visible")
-      .and("have.length", "1")
-      .within(() => {
-        cy.get(this.issuesList)
-          .should("have.length", expectedAmountIssues)
-          .first()
-          .find("p")
-          .contains(issueDetails.title);
-        cy.get(`[data-testid="avatar:${issueDetails.assignee}"]`).should(
-          "be.visible"
-        );
-        cy.get(this.issuesList)
-          .contains(issueDetails.title)
-          .should("be.visible")
-          .click();
-      });
-    this.getIssueDetailsModal().should("be.visible");
-  }
-
   // COMMENTS
 
-  // Creating a new comment section
+  // Creating a new comment
 
   addNewComment() {
     this.getIssueDetailsModal().within(() => {
@@ -106,6 +33,31 @@ class IssueCommentsAndTime {
       this.clickSaveCommentButton();
       cy.contains(this.addCommentField).should("exist");
     });
+  }
+
+  cancelAddingNewComment() {
+    this.getIssueDetailsModal().within(() => {
+      cy.contains(this.addCommentField).should("exist").click();
+      cy.get(this.addCommentTextarea).type(this.comment);
+      this.clickCancelCommentButton();
+      cy.contains(this.addCommentField).should("exist");
+    });
+  }
+
+  assertCancelledNewCommentDoesNotExist() {
+    this.getIssueDetailsModal().within(() => {
+      cy.get(this.issueComment)
+        .should("have.length", "1")
+        .contains(this.comment)
+        .should("not.exist");
+    });
+    cy.reload();
+    cy.wait(10000);
+    this.getIssueDetailsModal()
+      .find(this.issueComment)
+      .should("have.length", "1")
+      .contains(this.comment)
+      .should("not.exist");
   }
 
   assertNewCommentVisibility() {
@@ -125,7 +77,7 @@ class IssueCommentsAndTime {
       .should("be.visible");
   }
 
-  // Editing a comment section
+  // Editing a comment
 
   clickEditCommentButton() {
     cy.get(this.issueComment)
@@ -183,7 +135,7 @@ class IssueCommentsAndTime {
     });
   }
 
-  // Deleting a comment section
+  // Deleting a comment
 
   clickDeleteCommentButton() {
     this.getIssueDetailsModal()
@@ -248,129 +200,10 @@ class IssueCommentsAndTime {
       .should("not.exist");
   }
 
-  // TIME TRACKING
+  // TIME ESTIMATION
 
-  // Estimation and logging default state(empty)
-
-  getDefaultTimeTrackingField(valueAmount) {
-    this.getIssueDetailsModal()
-      .find(this.trackingIcon)
-      .next()
-      .children(1)
-      .should("contain", "No time logged")
-      .and("be.visible")
-      .next("div")
-      .should("contain", `"${valueAmount}h estimated"`)
-      .and("be.visible");
-  }
-
-  clickDefaultTimeTrackingField() {
-    this.getDefaultTimeTrackingField().click();
-  }
-
-  getDefaultInputTimeEstimationField() {
-    this.getIssueDetailsModal().within(() => {
-      cy.contains(this.timeEstimationTitle)
-        .next('input[placeholder="Number"]')
-        .should("have.value", null)
-        .and("be.visible")
-        .click();
-    });
-  }
-
-  clickDefaultTimeEstimationField() {
-    this.getDefaultInputTimeEstimationField().click();
-  }
-
-  // Filling estimation and logging with custom values
-
-  getInputTimeEstimationField(valueAmount) {
-    this.getIssueDetailsModal()
-      .find("div")
-      .contains(this.timeEstimationTitle)
-      .next("input")
-      .contains("placeholder", "Number")
-      .should("have.value", valueAmount)
-      .and("be.visible");
-  }
-
-  clickEditedTimeEstimationField(valueAmount) {
-    this.getInputTimeEstimationField(valueAmount).click();
-  }
-
-  // Editing estimation and logging
-
-  editDefaultTimeEstimation(valueAmount) {
-    this.getDefaultInputTimeEstimationField().type(valueAmount);
-    this.getDefaultTimeTrackingField(valueAmount);
-  }
-
-  editCustomValueTimeEstimation(valueAmount, newValueAmount) {
-    this.clickEditedTimeEstimationField(valueAmount)
-      .clear()
-      .type(newValueAmount);
-    this.getDefaultTimeTrackingField()
-      .next("div")
-      .should("contain", "${newValueAmount}h estimated")
-      .and("be.visible");
-  }
-
-  // example
-
-  assertDefaultTimeTrackingState() {
-    this.getIssueDetailsModal().within(() => {
-      cy.get(this.timeEstimationField)
-        .should("have.value", "")
-        .and("be.visible");
-      cy.get(this.trackingIcon)
-        .next()
-        .children(1)
-        .should("contain", "No time logged")
-        .and("be.visible");
-    });
-  }
-
-  addTimeEstimation(valueAmount) {
-    this.getIssueDetailsModal().within(() => {
-      cy.get(this.timeEstimationField).click().type(valueAmount);
-      cy.contains("Updated at").click();
-      cy.wait(10000);
-    });
-  }
-
-  assertEditedTimeEstimationVisibility(valueAmount, issueDetails) {
-    this.getIssueDetailsModal().within(() => {
-      cy.get(this.timeEstimationField)
-        .should("have.value", valueAmount)
-        .and("be.visible");
-      cy.get(this.closeIcon).first().click();
-    });
-    cy.get(this.issueDetailsModal).should("not.exist");
-    cy.reload();
-    cy.get(this.doneList)
-      .should("be.visible")
-      .contains(issueDetails.title)
-      .should("be.visible")
-      .click();
-    this.getIssueDetailsModal()
-      .should("be.visible")
-      .within(() => {
-        cy.get(this.timeEstimationField)
-          .should("have.value", valueAmount)
-          .and("be.visible");
-      });
-  }
-  // TIME TRACKING AND LOGGING REALLL
   closeDetailsModal() {
     cy.get(this.closeIcon).first().click();
-  }
-
-  addTimeEstimation(valueAmount) {
-    this.getIssueDetailsModal().within(() => {
-      cy.get(this.timeEstimationField).click().type(valueAmount);
-      cy.contains("Updated at").click();
-      cy.wait(3000);
-    });
   }
 
   clearExistingTimeTracking() {
@@ -407,15 +240,8 @@ class IssueCommentsAndTime {
         .clear();
       cy.contains("Updated at").click();
       cy.wait(3000);
-      // Checking if time tracking is set to default(no values)
-      cy.get(this.trackingIcon)
-        .next()
-        .children(1)
-        .should("contain", "No time logged");
-      cy.get(this.timeEstimationField)
-        .should("have.value", "")
-        .and("have.attr", "placeholder", "Number")
-        .and("be.visible");
+      // Asserting time tracking is set to default(no values)
+      this.assertDefaultTimeTrackingValues();
       // Reloading and assuring time tracking values stay the same
       this.closeDetailsModal();
     });
@@ -423,42 +249,46 @@ class IssueCommentsAndTime {
     cy.get(this.doneList)
       .should("be.visible")
       .contains(this.newIssueTitle)
+      .should("be.visible")
       .click();
     this.getIssueDetailsModal()
       .should("be.visible")
       .within(() => {
+        this.assertDefaultTimeTrackingValues();
         cy.get(this.trackingIcon)
           .next()
           .children(1)
-          .should("contain", "No time logged")
-          .and("be.visible");
-        cy.get(this.timeEstimationField)
-          .should("have.value", "")
-          .and("have.attr", "placeholder", "Number")
-          .and("be.visible");
+          .should("not.contain", "10h estimated");
       });
   }
-  /* not sure
-  assertDefaultState(previousValue) {
+
+  assertDefaultTimeTrackingValues() {
+    cy.get(this.trackingIcon)
+      .next()
+      .children(1)
+      .should("contain", "No time logged")
+      .and("be.visible");
+    cy.get(this.timeEstimationField)
+      .should("have.value", "")
+      .and("have.attr", "placeholder", "Number")
+      .and("be.visible");
+  }
+
+  // Adding estimation
+
+  addTimeEstimation(valueAmount) {
     this.getIssueDetailsModal().within(() => {
-      cy.get(this.timeEstimationField)
-        .should("have.value", previousValue)
-        .and("be.visible");
-      cy.get(this.trackingIcon)
-        .next()
-        .children(1)
-        .should("contain", "4h logged")
-        .and("contain", `${previousValue}h estimated`)
-        .and("be.visible");
-    }); 
-  }*/
+      cy.get(this.timeEstimationField).click().type(valueAmount);
+      cy.contains("Updated at").click();
+      cy.wait(3000);
+    });
+  }
 
   assertAddedTimeEstimationVisibility(valueAmount) {
     this.getIssueDetailsModal().within(() => {
-      cy.get(this.timeEstimationField)
-        .should("have.value", valueAmount)
-        .and("be.visible");
-      cy.get(this.closeIcon).first().click();
+      this.getEstimationFieldWithValue(valueAmount);
+      this.getEstimationWithNoTimeLogged(valueAmount);
+      this.closeDetailsModal();
     });
     cy.get(this.issueDetailsModal).should("not.exist");
     cy.reload();
@@ -470,32 +300,232 @@ class IssueCommentsAndTime {
     this.getIssueDetailsModal()
       .should("be.visible")
       .within(() => {
-        cy.get(this.timeEstimationField)
-          .should("have.value", valueAmount)
-          .and("be.visible");
+        this.getEstimationFieldWithValue(valueAmount);
+        this.getEstimationWithNoTimeLogged(valueAmount);
       });
   }
 
-  /* clickEdit(valueAmount) {
+  getEstimationWithNoTimeLogged(valueAmount) {
+    cy.get(this.trackingIcon)
+      .next()
+      .children(1)
+      .should("contain", "No time logged")
+      .and("contain", `${valueAmount}h estimated`)
+      .and("be.visible");
+  }
+
+  getEstimationFieldWithValue(valueAmount) {
+    cy.get(this.timeEstimationField)
+      .should("have.value", valueAmount)
+      .and("be.visible");
+  }
+
+  // Updating estimation
+
+  updateTimeEstimation(valueAmount, newValueAmount) {
     this.getIssueDetailsModal().within(() => {
-      cy.get('input[placeholder="Number"]')
-        .should("have.value", "")
-        .and("be.visible")
-        .click()
-        .type(valueAmount);
+      cy.get(this.timeEstimationField)
+        .should("have.value", valueAmount)
+        .clear()
+        .type(newValueAmount);
       cy.contains("Updated at").click();
-      cy.wait(5000);
-      cy.get(this.trackingIcon)
-        .next()
-        .children(1)
-        .should("contain", "No time logged")
-        .and("be.visible")
-        .next("div")
-        .should("contain", `${valueAmount}h estimated`)
-        .and("be.visible");
+      cy.wait(3000);
     });
   }
-    */
+
+  assertUpdatedTimeEstimationVisibility(newValueAmount) {
+    this.getIssueDetailsModal().within(() => {
+      this.getUpdatedEstimationFieldWithValue(newValueAmount);
+      this.getUpdatedEstimationWithNoTimeLogged(newValueAmount);
+      this.closeDetailsModal();
+    });
+    cy.get(this.issueDetailsModal).should("not.exist");
+    cy.reload();
+    cy.get(this.doneList)
+      .should("be.visible")
+      .contains(this.newIssueTitle)
+      .should("be.visible")
+      .click();
+    this.getIssueDetailsModal()
+      .should("be.visible")
+      .within(() => {
+        this.getUpdatedEstimationFieldWithValue(newValueAmount);
+        this.getUpdatedEstimationWithNoTimeLogged(newValueAmount);
+      });
+  }
+
+  getUpdatedEstimationWithNoTimeLogged(newValueAmount) {
+    cy.get(this.trackingIcon)
+      .next()
+      .children(1)
+      .should("contain", "No time logged")
+      .and("contain", `${newValueAmount}h estimated`)
+      .and("be.visible");
+  }
+
+  getUpdatedEstimationFieldWithValue(newValueAmount) {
+    cy.get(this.timeEstimationField)
+      .should("have.value", newValueAmount)
+      .and("be.visible");
+  }
+
+  // Deleting estimation
+
+  clearTimeEstimation(newValueAmount) {
+    this.getIssueDetailsModal().within(() => {
+      cy.get(this.timeEstimationField)
+        .should("have.value", newValueAmount)
+        .clear();
+      cy.contains("Updated at").click();
+      cy.wait(3000);
+    });
+  }
+
+  assertDeletedTimeEstimationVisibility(newValueAmount) {
+    this.getIssueDetailsModal().within(() => {
+      this.assertDefaultTimeTrackingValues();
+      this.closeDetailsModal();
+    });
+    cy.reload();
+    cy.get(this.doneList)
+      .should("be.visible")
+      .contains(this.newIssueTitle)
+      .should("be.visible")
+      .click();
+    this.getIssueDetailsModal()
+      .should("be.visible")
+      .within(() => {
+        this.assertDefaultTimeTrackingValues();
+        cy.get(this.trackingIcon)
+          .next()
+          .children(1)
+          .should("not.contain", `${newValueAmount}h estimated`);
+      });
+  }
+
+  // TIME LOGGING IN TIME TRACKING
+
+  // Adding time log
+
+  clickTrackingIcon() {
+    cy.get(this.trackingIcon).click();
+  }
+
+  addTimeTracking(valueSpent, valueRemaining) {
+    this.clickTrackingIcon();
+    cy.get(this.timeTrackingModal)
+      .should("be.visible")
+      .within(() => {
+        this.typeValuesToTimeTrackingFields(valueSpent, valueRemaining);
+      });
+    cy.get(this.timeTrackingModal).should("not.exist");
+  }
+
+  typeValuesToTimeTrackingFields(valueSpent, valueRemaining) {
+    cy.contains("Time spent")
+      .next()
+      .children("input")
+      .should("have.attr", "placeholder", "Number")
+      .and("be.visible")
+      .click()
+      .type(valueSpent);
+    cy.contains("Time remaining")
+      .next()
+      .children("input")
+      .should("have.attr", "placeholder", "Number")
+      .and("be.visible")
+      .click()
+      .type(valueRemaining);
+    cy.get("button").should("contain", "Done").click();
+  }
+
+  assertAddedTimeTrackingVisibility(valueAmount, valueSpent, valueRemaining) {
+    this.getIssueDetailsModal().within(() => {
+      this.getEstimationFieldWithValue(valueAmount);
+      this.getTimeTrackingData(valueAmount, valueSpent, valueRemaining);
+      this.closeDetailsModal();
+    });
+    cy.reload();
+    cy.get(this.doneList)
+      .should("be.visible")
+      .contains(this.newIssueTitle)
+      .should("be.visible")
+      .click();
+    this.getIssueDetailsModal().within(() => {
+      this.getEstimationFieldWithValue(valueAmount);
+      this.getTimeTrackingData(valueAmount, valueSpent, valueRemaining);
+    });
+  }
+
+  getTimeTrackingData(valueAmount, valueSpent, valueRemaining) {
+    cy.get(this.trackingIcon)
+      .next()
+      .children(1)
+      .should("contain", `${valueSpent}h logged`)
+      .and("contain", `${valueRemaining}h remaining`)
+      .and("be.visible")
+      .and("not.contain", "No time logged")
+      .and("not.contain", `${valueAmount}h estimated`);
+  }
+
+  // Removing time log
+
+  removeTimeTracking(valueSpent, valueRemaining) {
+    this.clickTrackingIcon();
+    cy.get(this.timeTrackingModal)
+      .should("be.visible")
+      .within(() => {
+        this.clearTimeTrackingValues(valueSpent, valueRemaining);
+      });
+    cy.get(this.timeTrackingModal).should("not.exist");
+  }
+
+  assertRemovedTimeTrackingVisibility(valueAmount, valueSpent, valueRemaining) {
+    this.getIssueDetailsModal().within(() => {
+      this.getEstimationFieldWithValue(valueAmount);
+      this.getEstimationWithNoTimeLogged(valueAmount);
+      this.getNotContainTrackingData(valueSpent, valueRemaining);
+      this.closeDetailsModal();
+    });
+    cy.get(this.issueDetailsModal).should("not.exist");
+    cy.reload();
+    cy.get(this.doneList)
+      .should("be.visible")
+      .contains(this.newIssueTitle)
+      .should("be.visible")
+      .click();
+    this.getIssueDetailsModal()
+      .should("be.visible")
+      .within(() => {
+        this.getEstimationFieldWithValue(valueAmount);
+        this.getEstimationWithNoTimeLogged(valueAmount);
+        this.getNotContainTrackingData(valueSpent, valueRemaining);
+      });
+  }
+
+  getNotContainTrackingData(valueSpent, valueRemaining) {
+    cy.get(this.trackingIcon)
+      .next()
+      .children(1)
+      .should("not.contain", `${valueSpent}h logged`)
+      .and("not.contain", `${valueRemaining}h remaining`);
+  }
+
+  clearTimeTrackingValues(valueSpent, valueRemaining) {
+    cy.contains("Time spent")
+      .next()
+      .children("input")
+      .should("have.value", valueSpent)
+      .and("be.visible")
+      .clear();
+    cy.contains("Time remaining")
+      .next()
+      .children("input")
+      .should("have.value", valueRemaining)
+      .and("be.visible")
+      .clear();
+    cy.get("button").should("contain", "Done").click();
+  }
 }
 
 export default new IssueCommentsAndTime();

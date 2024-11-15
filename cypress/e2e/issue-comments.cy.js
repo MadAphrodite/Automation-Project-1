@@ -19,11 +19,15 @@ describe("Issue comments creating, editing and deleting", () => {
   });
 
   it("Should create, edit and delete a comment successfully", () => {
-    // Creating a new comment, asserting visibility
+    // Cancelling new comment creation successfully
+    IssueCommentsAndTime.cancelAddingNewComment();
+    IssueCommentsAndTime.assertCancelledNewCommentDoesNotExist();
+
+    // Creating a new comment successfully
     IssueCommentsAndTime.addNewComment();
     IssueCommentsAndTime.assertNewCommentVisibility();
 
-    // Editing the new comment, asserting visibility
+    // Editing the new comment successfully
     IssueCommentsAndTime.clickEditCommentButton();
     IssueCommentsAndTime.editPreviousCommentText();
     IssueCommentsAndTime.assertEditedCommentVisibility();
