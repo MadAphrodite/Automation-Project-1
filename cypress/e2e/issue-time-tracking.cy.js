@@ -7,11 +7,6 @@ defaultCommandTimeout: 60000,
 requestTimeout: 60000,
 */
 
-/* About the assignment:
-I could not get the tests to work with creating a new issue in the beforeEach block
-(time tracking values kept resetting to default after closing the IssueDetailsModal),
-so I used an existing issue(clearing its values) to execute the tests.*/
-
 describe("Issue time tracking", () => {
   beforeEach(() => {
     cy.viewport(1920, 1080);

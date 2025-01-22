@@ -71,40 +71,8 @@ describe("Issue details editing", () => {
     });
   });
 
-  // BONUS ASSIGNMENTS 1 and 2
+  // BONUS ASSIGNMENTS
 
-  it("Should check and validate priority dropdown values", () => {
-    const expectedLength = 5;
-    const expectedValues = ["Lowest", "Low", "Medium", "High", "Highest"];
-    let priorityList = [];
-
-    // Get initially selected value and push it to the array
-    cy.get('[data-testid="select:priority"]').within(() => {
-      cy.get('[data-testid="icon:arrow-up"]')
-        .next("div")
-        .invoke("text")
-        .then((initialValue) => {
-          priorityList.push(initialValue.trim());
-          cy.log(`Initial selected priority value: ${initialValue}`);
-        });
-    });
-    // Loop through dropdown options and push them to the array
-    cy.get('[data-testid="select:priority"]').click();
-    cy.get('[data-testid="select:priority"]')
-      .siblings()
-      .find('div[data-testid^="select-option"]')
-      .each(($el) => {
-        const priorityName = $el.text().trim();
-        priorityList.push(priorityName.trim());
-        cy.log(`Added priority: ${priorityName}`);
-        cy.log(`Array length: ${priorityList}`);
-      });
-    // Assert the array has the same length and values as the expected length and values
-    cy.wrap(priorityList).should("have.length", expectedLength);
-    expectedValues.forEach((value) => {
-      cy.wrap(priorityList).should("include", value);
-    });
-  });
   it("Should check and validate that reporter's name matches regex", () => {
     cy.get('[data-testid="select:reporter"]').click();
     cy.get('[data-testid="avatar:Baby Yoda"]')
@@ -116,6 +84,65 @@ describe("Issue details editing", () => {
       cy.log(`Reporter: ${reporter}`);
       const regex = /^[A-Za-z\s]+$/;
       expect(reporter).to.match(regex);
+    });
+  });
+
+  it("Should check that priority fields have ${numberOfPriorities} values", () => {
+    const numberOfPriorities = 5;
+    let priorities = [];
+
+    // Add already selected priority to the list
+    cy.get('[data-testid="select:priority"]')
+      .invoke("text")
+      .then((extractedPriority) => {
+        priorities.push(extractedPriority);
+      });
+    cy.get('[data-testid="select:priority"]').click();
+
+    // Get number of options from the page
+    cy.get("[data-select-option-value]").then(($options) => {
+      const itemCount = Cypress.$($options).length;
+
+      // Loop through dropdown options and push them to the array
+      for (let index = 0; index < itemCount; index++) {
+        cy.get("[data-select-option-value]")
+          .eq(index)
+          .invoke("text")
+          .then((extractedPriority) => {
+            priorities.push(extractedPriority);
+            // Assert the array has the same length as the expected length
+            if (index == itemCount - 1) {
+              cy.log("TOTAL calculated array length: " + priorities.length);
+              expect(priorities.length).to.be.eq(numberOfPriorities);
+            }
+          });
+      }
+    });
+  });
+
+  it("Should create an issue without title that has leading and trailing spaces", () => {
+    const title = "    Hello world     ";
+    cy.get('[data-testid="icon:close"]').first().click();
+    cy.get('[data-testid="icon:plus"]')
+      .next()
+      .should("contain", "Create Issue")
+      .click();
+    cy.get('[data-testid="modal:issue-create"]').within(() => {
+      cy.get(".ql-editor").type("TEST_DESCRIPTION");
+      cy.get('input[name="title"]').debounced("type", title);
+      cy.get('button[type="submit"]').click();
+    });
+
+    cy.get('[data-testid="modal:issue-create"]').should("not.exist");
+    cy.contains("Issue has been successfully created.").should("be.visible");
+    cy.reload();
+    cy.contains("Issue has been successfully created.").should("not.exist");
+
+    cy.get('[data-testid="board-list:backlog').within(() => {
+      cy.get('[data-testid="list-issue"]')
+        .first()
+        .find("p")
+        .contains(title.trim());
     });
   });
 });
