@@ -17,11 +17,11 @@ The following functionalities are covered by UI automation tests:
 * Completed all the mandatory and bonus assignments successfully.
 
 ## Assignments
-1. Assignment 1: Add Issue Creation Tests
-2. Assignment 2: Add Issue Deletion Tests
-3. Assignment 3: Add Comments functionalities Tests
-4. Assignment 4: Add Time Tracking Tests
-5. Bonus: Solve small Javascript function tasks
+1. [Assignment 1: Add Issue Creation Tests](https://github.com/MadAphrodite/Jira_Clone_Front-End_Automation/blob/master/cypress/e2e/issue-create.cy.js)
+2. [Assignment 2: Add Issue Deletion Tests](https://github.com/MadAphrodite/Jira_Clone_Front-End_Automation/blob/master/cypress/e2e/issue-delete.cy.js)
+3. [Assignment 3: Add Comments functionalities Tests](https://github.com/MadAphrodite/Jira_Clone_Front-End_Automation/blob/master/cypress/e2e/issue-comments.cy.js)
+4. [Assignment 4: Add Time Tracking Tests](https://github.com/MadAphrodite/Jira_Clone_Front-End_Automation/blob/master/cypress/e2e/issue-time-tracking.cy.js)
+5. [Bonus: Solve small Javascript function tasks](https://github.com/MadAphrodite/Jira_Clone_Front-End_Automation/blob/master/cypress/e2e/issue-details-edit.cy.js)
 
 ## Technical workplace set-up
 #### Install Cypress and dependencies
