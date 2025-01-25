@@ -17,10 +17,11 @@ The following functionalities are covered by UI automation tests:
 * Completed all the mandatory and bonus assignments successfully.
 
 ## Assignments
-
-
-
-
+1. Assignment 1: Add Issue Creation Tests
+2. Assignment 2: Add Issue Deletion Tests
+3. Assignment 3: Add Comments functionalities Tests
+4. Assignment 4: Add Time Tracking Tests
+5. Bonus: Solve small Javascript function tasks
 
 ## Technical workplace set-up
 #### Install Cypress and dependencies
