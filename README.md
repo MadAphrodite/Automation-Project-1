@@ -6,7 +6,7 @@ The following functionalities are covered by UI automation tests:
 * Creation, editing and deleting of task comments
 * Time tracking functionality
 * Search functionality
-## My responsibilites and highlights during this project
+## My responsibilites and highlights during the project
 * Gaining knowledge of basic Javascript(arrays, template literals, string methods)
 * Practicing coding with the POM approach
 * Analyzing existing test documentation
@@ -14,7 +14,7 @@ The following functionalities are covered by UI automation tests:
 * Generating and executing UI automation tests with Cypress
 #### Highlights:
 * The mentor commended me for meeting their expectations by effectively using functions and the POM approach to enhance code organization.
-* Completed all the mandatory assignments successfully.
+* Completed all the mandatory and bonus assignments successfully.
 
 
 ## Technical workplace set-up
