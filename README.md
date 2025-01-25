@@ -16,6 +16,11 @@ The following functionalities are covered by UI automation tests:
 * The mentor commended me for meeting their expectations by effectively using functions and the POM approach to enhance code organization.
 * Completed all the mandatory and bonus assignments successfully.
 
+## Assignments
+
+
+
+
 
 ## Technical workplace set-up
 #### Install Cypress and dependencies
